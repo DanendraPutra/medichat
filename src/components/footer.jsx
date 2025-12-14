@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '../assets/images/logo.jpg';
+import logoImage from '../assets/images/LogoMedicare Putih.png';
 
 const Footer = () => {
   return (
@@ -13,7 +13,7 @@ const Footer = () => {
               className="header-logo"
               style={{ 
                 cursor: 'pointer',
-                width: '180px',
+                width: '300px',
                 height: 'auto'
               }}
               onError={(e) => {
