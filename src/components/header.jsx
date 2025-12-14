@@ -78,8 +78,8 @@ const Header = () => {
               onClick={() => navigate('/')}
               style={{ 
                 cursor: 'pointer',
-                width: '50px',
-                height: '50px'
+                width: '180px',
+                height: 'auto'
               }}
               onError={(e) => {
                 e.target.onerror = null;
