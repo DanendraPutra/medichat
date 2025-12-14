@@ -1,143 +1,148 @@
-// components/header.jsx (dengan logo kecil)
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from '../assets/images/logo.jpg';
 import '../Styles.css';
 
-const Header = () => {
+const Header = ({ authStatus }) => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
-  // Check auth status on component mount
-  useEffect(() => {
-    const checkAuth = () => {
-      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      setIsLoggedIn(loggedIn);
-    };
-    
-    checkAuth();
-    
-    // Listen for auth changes
-    const handleStorageChange = () => checkAuth();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  // Navigasi ke halaman diagnosa dengan konfirmasi login
-  const handleDiagnosaClick = () => {
-    console.log('Navigating to Diagnosis page...');
-    
-    if (!isLoggedIn) {
-      const confirmLogin = window.confirm(
-        'Untuk menggunakan layanan diagnosis, Anda perlu memiliki akun.\n\nApakah Anda sudah memiliki akun?\n\nKlik "OK" untuk Login\nKlik "Cancel" untuk Daftar Akun Baru'
-      );
-      
-      if (confirmLogin) navigate('/login');
-      else navigate('/register');
-
-      return;
-    }
-    
-    navigate('/diagnosis');
+  // Ambil data user dari props
+  const { isLoggedIn, user } = authStatus;
+  
+  // Ambil nama depan saja
+  const getFirstName = (fullName) => {
+    if (!fullName) return 'User';
+    return fullName.split(' ')[0];
   };
 
-  // Navigasi ke beranda
-  const handleHomeClick = (e) => {
-    e.preventDefault();
-    console.log('Navigating to Home...');
+  const firstName = user ? getFirstName(user.name) : '';
+
+  // Logic Navigasi Home (SPA - Tanpa Reload)
+  const handleHomeClick = () => {
     navigate('/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Logout function
+  // Logic Tombol Utama (Diagnosa / Profil)
+  const handleMainButtonClick = () => {
+    if (isLoggedIn) {
+      // Jika sudah login, tombol ini membuka Popup Profil
+      setShowProfile(true);
+    } else {
+      // Jika belum login, tombol ini arahkan ke login/register
+      const confirmLogin = window.confirm(
+        'Untuk melakukan diagnosa, Anda harus login terlebih dahulu.\nKlik OK untuk Login.'
+      );
+      if (confirmLogin) navigate('/login');
+      else navigate('/register');
+    }
+  };
+
   const handleLogout = () => {
     if (window.confirm('Apakah Anda yakin ingin keluar?')) {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('user');
-      setIsLoggedIn(false);
-      navigate('/');
-      alert('Anda telah berhasil logout.');
+      // Kirim event agar App.js tahu state berubah
       window.dispatchEvent(new Event('storage'));
+      setShowProfile(false);
+      navigate('/');
     }
   };
 
   return (
-    <header className="header">
-      <div className="container">
-        <div className="header-content">
+    <>
+      <header className="header">
+        <div className="container">
+          <div className="header-content">
 
-          {/* Logo Kecil */}
-          <div className="logo-container">
-            <img 
-              src={logoImage} 
-              alt="MediChat Logo" 
-              className="header-logo"
-              onClick={() => navigate('/')}
-              style={{ 
-                cursor: 'pointer',
-                width: '180px',
-                height: 'auto'
-              }}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "https://via.placeholder.com/50x50/2a5298/ffffff?text=MC";
-              }}
-            />
+            {/* === KIRI: LOGO (180px) === */}
+            <div className="logo-container">
+              <img 
+                src={logoImage} 
+                alt="MediChat Logo" 
+                className="header-logo"
+                onClick={() => navigate('/')}
+                style={{ 
+                  width: '180px', 
+                  height: 'auto', 
+                  cursor: 'pointer' 
+                }}
+              />
+            </div>
+
+            {/* === KANAN: NAVIGASI === */}
+            <div className="nav-right">
+              
+              {/* Link Home: Menggunakan span/div agar TIDAK reload halaman */}
+              <div 
+                className="nav-link"
+                onClick={handleHomeClick}
+                style={{ cursor: 'pointer' }}
+              >
+                Home
+              </div>
+              
+              {/* TOMBOL UTAMA (Berubah sesuai status Login) */}
+              <button 
+                onClick={handleMainButtonClick}
+                className="primary-btn nav-diagnosa"
+                style={{ minWidth: '140px' }} // Agar nama panjang muat
+              >
+                {/* Logic Text: Jika Login tampilkan Nama, Jika tidak tampilkan Diagnosa */}
+                {isLoggedIn ? `Hai, ${firstName}` : 'Diagnosa'}
+              </button>
+
+            </div> 
           </div>
+        </div>
+      </header>
 
-          {/* Bagian kanan header */}
-          <div className="nav-right">
-            
-            <a 
-              href="/"
-              className="nav-link"
-              onClick={handleHomeClick}
-            >
-              Home
-            </a>
-            
-            <button 
-              onClick={handleDiagnosaClick}
-              className="primary-btn nav-diagnosa"
-            >
-              Diagnosa
-            </button>
+      {/* === POPUP PROFIL === */}
+      {showProfile && isLoggedIn && (
+        <div className="modal-overlay" onClick={() => setShowProfile(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => setShowProfile(false)}>&times;</button>
 
-            {/* Jika sudah login → tampilkan ikon profil + logout */}
-            {isLoggedIn && (
-              <>
-                {/* Ikon Profil */}
-                <div 
-                  className="profile-icon"
-                  onClick={() => navigate('/profile')}
-                  style={{
-                    width: "35px",
-                    height: "35px",
-                    borderRadius: "50%",
-                    backgroundColor: "#2a5298",
-                    cursor: "pointer",
-                    marginRight: "10px"
-                  }}
-                ></div>
+            <div className="profile-layout">
+              <div className="profile-left">
+                {/* Avatar Placeholder */}
+                <div className="profile-avatar-large"></div>
+              </div>
 
-                {/* Tombol Logout */}
-                <button 
-                  onClick={handleLogout}
-                  className="secondary-btn nav-logout"
-                >
-                  Logout
-                </button>
-              </>
-            )}
+              <div className="profile-right">
+                <div className="form-group">
+                  <input type="text" className="modal-input" value={firstName} readOnly />
+                  <span className="input-icon">✎</span>
+                </div>
+                <div className="form-group">
+                  <input type="email" className="modal-input" value={user?.email || 'email@contoh.com'} readOnly />
+                </div>
+                <div className="action-buttons-row">
+                  <button className="btn-outline">Ganti Password</button>
+                  <button className="btn-outline">Edit Foto</button>
+                </div>
+                <div>
+                  <button onClick={handleLogout} className="btn-danger">Keluar</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="profile-bottom-section">
+              <div className="setting-row">
+                <span className="setting-label">Bahasa</span>
+                <button className="btn-language">Indonesia</button>
+              </div>
+              <div className="setting-row">
+                <span className="setting-label">Hapus Akun Selamanya</span>
+                <button className="btn-danger" onClick={() => alert('Fitur segera hadir.')}>Hapus</button>
+              </div>
+            </div>
 
           </div>
-
-        </div> 
-      </div>
-    </header>
+        </div>
+      )}
+    </>
   );
 };
 

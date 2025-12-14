@@ -51,7 +51,7 @@ body {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 5px 0; /* Diperkecil */
+  padding: 0; /* Diperkecil */
 }
 
 /* LOGO KECIL & TANPA BOX */
@@ -547,4 +547,192 @@ body {
   width: 100%;
   font-size: 0.9rem;
   opacity: 0.7;
+}
+
+/* ================================================= */
+/* 6. PROFILE MODAL STYLES (POPUP) */
+/* ================================================= */
+
+/* Latar belakang gelap (Overlay) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Hitam transparan */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Di atas header */
+  animation: fadeIn 0.3s ease;
+}
+
+/* Kotak Putih Modal */
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 800px; /* Lebar sesuai desain */
+  border-radius: 12px;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+/* Grid Layout: Kiri (Foto) & Kanan (Form) */
+.profile-layout {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+/* Bagian Kiri: Foto Profil Besar */
+.profile-left {
+  flex: 0 0 200px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.profile-avatar-large {
+  width: 180px;
+  height: 180px;
+  background-color: #d3d3d3; /* Warna abu-abu default */
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Bagian Kanan: Input Form */
+.profile-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  position: relative;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #2a5298; /* Border biru tipis */
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+}
+
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2a5298;
+  cursor: pointer;
+}
+
+/* Tombol-tombol kecil (Ganti Pass, Edit Foto) */
+.action-buttons-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.btn-outline {
+  padding: 8px 15px;
+  background: transparent;
+  border: 1px solid #2a5298;
+  color: #2a5298;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-outline:hover {
+  background: #f0f4f8;
+}
+
+/* Tombol Merah (Keluar/Hapus) */
+.btn-danger {
+  padding: 10px 25px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  display: inline-block;
+  transition: background 0.3s;
+}
+
+.btn-danger:hover {
+  background-color: #cc0000;
+}
+
+/* Bagian Bawah: Bahasa & Hapus Akun */
+.profile-bottom-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.setting-label {
+  font-size: 1.2rem;
+  color: #1e3c72;
+  font-weight: 600;
+}
+
+.btn-language {
+  padding: 8px 20px;
+  border: 1px solid #2a5298;
+  color: #1e3c72;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Tombol Close (Silang) di pojok */
+.close-modal-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+}
+
+/* Animasi Popup */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsif untuk HP */
+@media (max-width: 768px) {
+  .profile-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
 }
