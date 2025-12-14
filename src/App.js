@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'; // Tambah useLocation
 import './Styles.css';
-// PENTING: Baris ini diaktifkan kembali agar desain Login/Register muncul
 import './Styles/auth.css'; 
 
 import Header from './components/header'; 
@@ -13,16 +12,14 @@ import DiagnosisPage from './components/DiagnosisPage';
 import Login from './components/Login';
 import Register from './components/Register';
 
-// Komponen untuk halaman utama
+// ... (HomePage, LoginPage, RegisterPage, ProtectedRoute TETAP SAMA) ...
+// Copas saja bagian komponen-komponen kecil di atas dari kode sebelumnya jika tidak ada perubahan
+
 const HomePage = () => {
   const navigate = useNavigate();
-
   const navigateTo = (page) => {
-    if (page === 'diagnosis') {
-      navigate('/diagnosis');
-    }
+    if (page === 'diagnosis') navigate('/diagnosis');
   };
-
   return (
     <>
       <Hero navigateTo={navigateTo} />
@@ -32,17 +29,9 @@ const HomePage = () => {
   );
 };
 
-// Komponen untuk halaman Login
-const LoginPage = () => {
-  return <Login />;
-};
+const LoginPage = () => <Login />;
+const RegisterPage = () => <Register />;
 
-// Komponen untuk halaman Register
-const RegisterPage = () => {
-  return <Register />;
-};
-
-// Komponen untuk mengecek status login (Proteksi Route)
 const ProtectedRoute = ({ children }) => {
   const [isChecking, setIsChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -53,42 +42,28 @@ const ProtectedRoute = ({ children }) => {
       setIsLoggedIn(loggedIn);
       setIsChecking(false);
     };
-
     checkAuth();
-    
-    const handleStorageChange = () => checkAuth();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  if (isChecking) {
-    return <div style={{ padding: '50px', textAlign: 'center' }}>Memuat...</div>;
-  }
-
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (isChecking) return <div>Loading...</div>;
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
   return children;
 };
 
-// Komponen Konten Utama
-const AppContent = ({ authStatus }) => {
+// --- APP CONTENT: DISINI PERBAIKANNYA ---
+const AppContent = ({ authStatus, updateAuthStatus }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Hook untuk mendeteksi perubahan URL
 
-  const navigateTo = (page) => {
-    if (page === 'home') navigate('/');
-    else if (page === 'diagnosis') navigate('/diagnosis');
-    else if (page === 'login') navigate('/login');
-    else if (page === 'register') navigate('/register');
-  };
+  // Setiap kali URL berubah (location), cek ulang status login!
+  useEffect(() => {
+    updateAuthStatus();
+  }, [location, updateAuthStatus]); 
 
   return (
     <>
-      {/* Mengirim props authStatus ke Header */}
       <Header authStatus={authStatus} />
       
       <Routes>
@@ -99,7 +74,7 @@ const AppContent = ({ authStatus }) => {
           path="/diagnosis" 
           element={
             <ProtectedRoute>
-              <DiagnosisPage navigateTo={navigateTo} />
+              <DiagnosisPage />
             </ProtectedRoute>
           } 
         />
@@ -111,14 +86,15 @@ const AppContent = ({ authStatus }) => {
   );
 };
 
-// --- App Utama ---
+// --- APP UTAMA ---
 const App = () => {
   const [authStatus, setAuthStatus] = useState({
     isLoggedIn: false,
     user: null
   });
 
-  const updateAuthStatus = () => {
+  // Fungsi update status kita definisikan di sini agar stabil
+  const updateAuthStatus = React.useCallback(() => {
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const userData = localStorage.getItem('user');
     
@@ -126,28 +102,20 @@ const App = () => {
       isLoggedIn: loggedIn,
       user: userData ? JSON.parse(userData) : null
     });
-  };
+  }, []);
 
   useEffect(() => {
     updateAuthStatus();
-    
-    const handleStorageChange = (e) => {
-      if (!e.key || e.key === 'isLoggedIn' || e.key === 'user') {
-        updateAuthStatus();
-      }
-    };
-
+    // Listener tambahan untuk storage event (antar tab)
+    const handleStorageChange = () => updateAuthStatus();
     window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [updateAuthStatus]);
 
   return (
     <Router>
-      <div className="App">
-        <AppContent authStatus={authStatus} />
-      </div>
+      {/* Kirim fungsi updateAuthStatus ke bawah */}
+      <AppContent authStatus={authStatus} updateAuthStatus={updateAuthStatus} />
     </Router>
   );
 };

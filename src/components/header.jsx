@@ -7,10 +7,8 @@ const Header = ({ authStatus }) => {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
 
-  // Ambil data user dari props
   const { isLoggedIn, user } = authStatus;
   
-  // Ambil nama depan saja
   const getFirstName = (fullName) => {
     if (!fullName) return 'User';
     return fullName.split(' ')[0];
@@ -18,19 +16,17 @@ const Header = ({ authStatus }) => {
 
   const firstName = user ? getFirstName(user.name) : '';
 
-  // Logic Navigasi Home (SPA - Tanpa Reload)
-  const handleHomeClick = () => {
-    navigate('/');
+  // Navigasi Halaman
+  const handleNavigation = (path) => {
+    navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Logic Tombol Utama (Diagnosa / Profil)
-  const handleMainButtonClick = () => {
+  // Logic Klik Diagnosa
+  const handleDiagnosaClick = () => {
     if (isLoggedIn) {
-      // Jika sudah login, tombol ini membuka Popup Profil
-      setShowProfile(true);
+      navigate('/diagnosis');
     } else {
-      // Jika belum login, tombol ini arahkan ke login/register
       const confirmLogin = window.confirm(
         'Untuk melakukan diagnosa, Anda harus login terlebih dahulu.\nKlik OK untuk Login.'
       );
@@ -39,11 +35,11 @@ const Header = ({ authStatus }) => {
     }
   };
 
+  // Logic Logout
   const handleLogout = () => {
     if (window.confirm('Apakah Anda yakin ingin keluar?')) {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('user');
-      // Kirim event agar App.js tahu state berubah
       window.dispatchEvent(new Event('storage'));
       setShowProfile(false);
       navigate('/');
@@ -56,49 +52,76 @@ const Header = ({ authStatus }) => {
         <div className="container">
           <div className="header-content">
 
-            {/* === KIRI: LOGO (180px) === */}
+            {/* LOGO */}
             <div className="logo-container">
               <img 
                 src={logoImage} 
                 alt="MediChat Logo" 
                 className="header-logo"
                 onClick={() => navigate('/')}
-                style={{ 
-                  width: '180px', 
-                  height: 'auto', 
-                  cursor: 'pointer' 
-                }}
+                style={{ width: '180px', height: 'auto', cursor: 'pointer' }}
               />
             </div>
 
-            {/* === KANAN: NAVIGASI === */}
+            {/* NAVIGASI KANAN */}
             <div className="nav-right">
               
-              {/* Link Home: Menggunakan span/div agar TIDAK reload halaman */}
+              {/* 1. Menu HOME */}
               <div 
                 className="nav-link"
-                onClick={handleHomeClick}
+                onClick={() => handleNavigation('/')}
                 style={{ cursor: 'pointer' }}
               >
                 Home
               </div>
-              
-              {/* TOMBOL UTAMA (Berubah sesuai status Login) */}
-              <button 
-                onClick={handleMainButtonClick}
-                className="primary-btn nav-diagnosa"
-                style={{ minWidth: '140px' }} // Agar nama panjang muat
+
+              {/* 2. Menu DIAGNOSA (Akses ke Halaman DiagnosisPage) */}
+              {/* Selalu muncul, tapi logic-nya ngecek login */}
+              <div 
+                 className="nav-link"
+                 onClick={handleDiagnosaClick}
+                 style={{ cursor: 'pointer', marginRight: '10px' }}
               >
-                {/* Logic Text: Jika Login tampilkan Nama, Jika tidak tampilkan Diagnosa */}
-                {isLoggedIn ? `Hai, ${firstName}` : 'Diagnosa'}
-              </button>
+                Diagnosa
+              </div>
+              
+              {/* 3. TOMBOL PROFIL / LOGIN */}
+              {/* Jika Login: Tampilkan Nama (Buka Popup) */}
+              {/* Jika Belum: Tampilkan Tombol Masuk */}
+              {isLoggedIn ? (
+                <button 
+                  onClick={() => setShowProfile(true)}
+                  className="primary-btn"
+                  style={{ 
+                    minWidth: '120px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    justifyContent: 'center',
+                    padding: '0.6rem 1.5rem'
+                  }}
+                >
+                  <div style={{
+                    width: '20px', height: '20px', 
+                    background: 'rgba(255,255,255,0.3)', borderRadius: '50%'
+                  }}></div>
+                  {firstName}
+                </button>
+              ) : (
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="primary-btn nav-diagnosa"
+                >
+                  Masuk
+                </button>
+              )}
 
             </div> 
           </div>
         </div>
       </header>
 
-      {/* === POPUP PROFIL === */}
+      {/* POPUP PROFIL (SAMA SEPERTI SEBELUMNYA) */}
       {showProfile && isLoggedIn && (
         <div className="modal-overlay" onClick={() => setShowProfile(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -106,7 +129,6 @@ const Header = ({ authStatus }) => {
 
             <div className="profile-layout">
               <div className="profile-left">
-                {/* Avatar Placeholder */}
                 <div className="profile-avatar-large"></div>
               </div>
 
